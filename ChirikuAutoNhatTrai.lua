@@ -1,4 +1,4 @@
-getgenv().Team = "Marines" -- Hoặc "Marines"
+getgenv().Team = "Pirates" -- Hoặc "Marines"
 
 -- Auto Join Team
 pcall(function()
@@ -7,7 +7,7 @@ pcall(function()
     end
 end)
 
--- Notification
+-- Notification function
 local StarterGui = game:GetService("StarterGui")
 local function Notify(title, text, duration, titleColor, textColor)
     pcall(function()
@@ -21,12 +21,12 @@ local function Notify(title, text, duration, titleColor, textColor)
     end)
 end
 
--- Giới thiệu đầu game
+-- Thêm phần giới thiệu giống Blox Fruits
 local function ShowIntroNotification()
     Notify("Auto Nhặt Trái", "By: Chiriku Roblox", 5, Color3.fromRGB(0, 255, 0), Color3.fromRGB(255, 255, 0))
 end
 
--- Bảng phân loại trái
+-- Rarity Table
 local RarityTable = {
     -- Common (Xám)
     ["Rocket-Rocket"] = {"Common", Color3.fromRGB(169,169,169)},
@@ -77,10 +77,10 @@ local RarityTable = {
     ["Leopard-Leopard"] = {"Mythical", Color3.fromRGB(255,0,0)},
     ["Yeti-Yeti"] = {"Mythical", Color3.fromRGB(255,0,0)},
     ["Kitsune-Kitsune"] = {"Mythical", Color3.fromRGB(255,0,0)},
-    ["Dragon-Dragon"] = {"Mythical", Color3.fromRGB(255,0,0)},
+    ["Dragon-Dragon"] = {"Mythical", Color3.fromRGB(255,0,0)}
 }
 
--- ESP trái
+-- ESP
 local function CreateESP(tool)
     if not tool:FindFirstChild("ESP") then
         local esp = Instance.new("BillboardGui", tool)
@@ -116,7 +116,7 @@ local function Teleport(fruit)
     end
 end
 
--- Lưu trái
+-- Cất kho
 local function StoreFruit()
     local tool = game.Players.LocalPlayer.Backpack:FindFirstChildWhichIsA("Tool")
     if tool then
@@ -132,31 +132,40 @@ local function StoreFruit()
     return false
 end
 
--- Smart Hop
-local HttpService = game:GetService("HttpService")
-local TeleportService = game:GetService("TeleportService")
-local Player = game.Players.LocalPlayer
-local PlaceId = game.PlaceId
-local JoinedServers = {}
-
+-- Teleport nếu lỗi
 local function Hop()
-    pcall(function()
-        Notify("Đang chuyển server...", "Không còn trái hoặc lỗi khi cất", 3)
-        local servers = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..PlaceId.."/servers/Public?sortOrder=Desc&limit=100"))
-        for _, server in pairs(servers.data) do
-            if server.playing < server.maxPlayers and server.id ~= game.JobId and not JoinedServers[server.id] then
-                JoinedServers[server.id] = true
-                TeleportService:TeleportToPlaceInstance(PlaceId, server.id, Player)
-                break
-            end
-        end
-    end)
+    Notify("Đang chuyển server...", "Không còn trái hoặc lỗi khi cất", 3)
+    wait(1)
+    game:GetService("TeleportService"):Teleport(game.PlaceId)
 end
 
--- Chạy
+-- Smart Hop
+local function SmartHop()
+    local teleportService = game:GetService("TeleportService")
+    local placeId = game.PlaceId
+    local players = game:GetService("Players")
+    
+    local fruitFound = false
+    for _, v in pairs(game.Workspace:GetChildren()) do
+        if v:IsA("Tool") and v.Name:find("Fruit") then
+            fruitFound = true
+            break
+        end
+    end
+
+    if not fruitFound then
+        Notify("Không có trái, đang chuyển server...", "Đang tìm server có trái", 3)
+        wait(1)
+        pcall(function()
+            teleportService:Teleport(placeId, players.LocalPlayer)
+        end)
+    end
+end
+
+-- Vòng lặp chính
 while true do
-    ShowIntroNotification()
-    wait(5)
+    ShowIntroNotification() -- Gọi hàm giới thiệu
+    wait(5) -- Hiển thị 5 giây rồi chuyển sang tìm trái
 
     local fruit = FindFruit()
     if fruit then
@@ -167,7 +176,7 @@ while true do
         if not StoreFruit() then Hop() end
     else
         wait(5)
-        Hop()
+        SmartHop() -- Sử dụng SmartHop khi không có trái
     end
     wait(1)
 end
