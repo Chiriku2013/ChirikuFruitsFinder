@@ -132,11 +132,15 @@ local function StoreFruit()
     return false
 end
 
--- Teleport nếu lỗi
-local function Hop()
-    Notify("Đang chuyển server...", "Không còn trái hoặc lỗi khi cất", 3)
-    wait(1)
-    game:GetService("TeleportService"):Teleport(game.PlaceId)
+-- Kiểm tra đã ghé server chưa
+local visitedServers = {}
+
+local function HasVisitedServer(placeId)
+    return visitedServers[placeId] or false
+end
+
+local function AddVisitedServer(placeId)
+    visitedServers[placeId] = true
 end
 
 -- Smart Hop
@@ -145,38 +149,19 @@ local function SmartHop()
     local placeId = game.PlaceId
     local players = game:GetService("Players")
     
-    local fruitFound = false
-    for _, v in pairs(game.Workspace:GetChildren()) do
-        if v:IsA("Tool") and v.Name:find("Fruit") then
-            fruitFound = true
-            break
+    -- Kiểm tra nếu chưa ghé thăm server này
+    if not HasVisitedServer(placeId) then
+        local fruitFound = false
+        for _, v in pairs(game.Workspace:GetChildren()) do
+            if v:IsA("Tool") and v.Name:find("Fruit") then
+                fruitFound = true
+                break
+            end
         end
-    end
 
-    if not fruitFound then
-        Notify("Không có trái, đang chuyển server...", "Đang tìm server có trái", 3)
-        wait(1)
-        pcall(function()
-            teleportService:Teleport(placeId, players.LocalPlayer)
-        end)
-    end
-end
-
--- Vòng lặp chính
-while true do
-    ShowIntroNotification() -- Gọi hàm giới thiệu
-    wait(5) -- Hiển thị 5 giây rồi chuyển sang tìm trái
-
-    local fruit = FindFruit()
-    if fruit then
-        Teleport(fruit)
-        wait(1.5)
-        firetouchinterest(fruit.Handle, game.Players.LocalPlayer.Character.HumanoidRootPart, 0)
-        wait(1)
-        if not StoreFruit() then Hop() end
-    else
-        wait(5)
-        SmartHop() -- Sử dụng SmartHop khi không có trái
-    end
-    wait(1)
-end
+        if not fruitFound then
+            Notify("Không có trái, đang chuyển server...", "Đang tìm server có trái", 3)
+            wait(1)
+            pcall(function()
+                teleportService:Teleport(placeId, players.LocalPlayer)
+                end
