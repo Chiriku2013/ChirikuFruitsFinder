@@ -1,72 +1,98 @@
-repeat wait() until game:IsLoaded()
-
--- Cấu hình
 getgenv().Team = "Marines" -- Hoặc "Marines"
 
--- Auto vào team
+-- Auto Join Team
 pcall(function()
     if not game.Players.LocalPlayer.Team then
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("SetTeam", getgenv().Team)
     end
 end)
 
--- Thông báo
+-- Notification function
 local StarterGui = game:GetService("StarterGui")
-local function Notify(title, text, duration)
+local function Notify(title, text, duration, titleColor, textColor)
     pcall(function()
         StarterGui:SetCore("SendNotification", {
             Title = title,
-            Text = text,
-            Duration = duration or 4
+            Text = text or "",
+            Duration = duration or 4,
+            TextColor3 = textColor or Color3.fromRGB(255,255,0),
+            BackgroundColor3 = titleColor or Color3.fromRGB(0,255,0)
         })
     end)
 end
 
--- Giới thiệu
-Notify("Auto Nhặt Trái", "By: Chiriku Roblox", 5)
-
--- Bảng độ hiếm + màu
-local FruitRarity = {
-    Common = {"Rocket-Rocket", "Spin-Spin", "Blade-Blade", "Spring-Spring", "Bomb-Bomb", "Smoke-Smoke", "Spike-Spike"},
-    Uncommon = {"Flame-Flame", "Falcon-Falcon", "Ice-Ice", "Sand-Sand", "Dark-Dark", "Diamond-Diamond"},
-    Rare = {"Light-Light", "Rubber-Rubber", "Barrier-Barrier", "Ghost-Ghost", "Magma-Magma"},
-    Legendary = {"Quake-Quake", "Buddha-Buddha", "Love-Love", "Spider-Spider", "Sound-Sound", "Phoenix-Phoenix", "Portal-Portal", "Rumble-Rumble", "Pain-Pain", "Blizzard-Blizzard"},
-    Mythical = {"Gravity-Gravity", "Mammoth-Mammoth", "T-Rex-T-Rex", "Dough-Dough", "Shadow-Shadow", "Venom-Venom", "Control-Control", "Gas-Gas", "Spirit-Spirit", "Leopard-Leopard", "Yeti-Yeti", "Kitsune-Kitsune", "Dragon-Dragon"}
-}
-local ColorMap = {
-    Common = Color3.fromRGB(169,169,169),
-    Uncommon = Color3.fromRGB(0,191,255),
-    Rare = Color3.fromRGB(148,0,211),
-    Legendary = Color3.fromRGB(255,105,180),
-    Mythical = Color3.fromRGB(255,0,0)
-}
-
--- Tìm độ hiếm
-local function GetRarity(name)
-    for rarity, list in pairs(FruitRarity) do
-        for _, fruit in pairs(list) do
-            if fruit == name then
-                return rarity, ColorMap[rarity]
-            end
-        end
-    end
-    return "Unknown", Color3.fromRGB(255,255,255)
+-- Thêm phần giới thiệu giống Blox Fruits
+local function ShowIntroNotification()
+    Notify("Auto Nhặt Trái", "By: Chiriku Roblox", 5, Color3.fromRGB(0, 255, 0), Color3.fromRGB(255, 255, 0))
 end
 
--- ESP trái
+-- Rarity Table
+local RarityTable = {
+    -- Common (Xám)
+    ["Rocket-Rocket"] = {"Common", Color3.fromRGB(169,169,169)},
+    ["Spin-Spin"] = {"Common", Color3.fromRGB(169,169,169)},
+    ["Blade-Blade"] = {"Common", Color3.fromRGB(169,169,169)},
+    ["Spring-Spring"] = {"Common", Color3.fromRGB(169,169,169)},
+    ["Bomb-Bomb"] = {"Common", Color3.fromRGB(169,169,169)},
+    ["Smoke-Smoke"] = {"Common", Color3.fromRGB(169,169,169)},
+    ["Spike-Spike"] = {"Common", Color3.fromRGB(169,169,169)},
+
+    -- Uncommon (Xanh dương)
+    ["Flame-Flame"] = {"Uncommon", Color3.fromRGB(0,191,255)},
+    ["Falcon-Falcon"] = {"Uncommon", Color3.fromRGB(0,191,255)},
+    ["Ice-Ice"] = {"Uncommon", Color3.fromRGB(0,191,255)},
+    ["Sand-Sand"] = {"Uncommon", Color3.fromRGB(0,191,255)},
+    ["Dark-Dark"] = {"Uncommon", Color3.fromRGB(0,191,255)},
+    ["Diamond-Diamond"] = {"Uncommon", Color3.fromRGB(0,191,255)},
+
+    -- Rare (Tím)
+    ["Light-Light"] = {"Rare", Color3.fromRGB(148,0,211)},
+    ["Rubber-Rubber"] = {"Rare", Color3.fromRGB(148,0,211)},
+    ["Barrier-Barrier"] = {"Rare", Color3.fromRGB(148,0,211)},
+    ["Ghost-Ghost"] = {"Rare", Color3.fromRGB(148,0,211)},
+    ["Magma-Magma"] = {"Rare", Color3.fromRGB(148,0,211)},
+
+    -- Legendary (Hồng)
+    ["Quake-Quake"] = {"Legendary", Color3.fromRGB(255,105,180)},
+    ["Buddha-Buddha"] = {"Legendary", Color3.fromRGB(255,105,180)},
+    ["Love-Love"] = {"Legendary", Color3.fromRGB(255,105,180)},
+    ["Spider-Spider"] = {"Legendary", Color3.fromRGB(255,105,180)},
+    ["Sound-Sound"] = {"Legendary", Color3.fromRGB(255,105,180)},
+    ["Phoenix-Phoenix"] = {"Legendary", Color3.fromRGB(255,105,180)},
+    ["Portal-Portal"] = {"Legendary", Color3.fromRGB(255,105,180)},
+    ["Rumble-Rumble"] = {"Legendary", Color3.fromRGB(255,105,180)},
+    ["Pain-Pain"] = {"Legendary", Color3.fromRGB(255,105,180)},
+    ["Blizzard-Blizzard"] = {"Legendary", Color3.fromRGB(255,105,180)},
+
+    -- Mythical (Đỏ)
+    ["Gravity-Gravity"] = {"Mythical", Color3.fromRGB(255,0,0)},
+    ["Mammoth-Mammoth"] = {"Mythical", Color3.fromRGB(255,0,0)},
+    ["T-Rex-T-Rex"] = {"Mythical", Color3.fromRGB(255,0,0)},
+    ["Dough-Dough"] = {"Mythical", Color3.fromRGB(255,0,0)},
+    ["Shadow-Shadow"] = {"Mythical", Color3.fromRGB(255,0,0)},
+    ["Venom-Venom"] = {"Mythical", Color3.fromRGB(255,0,0)},
+    ["Control-Control"] = {"Mythical", Color3.fromRGB(255,0,0)},
+    ["Gas-Gas"] = {"Mythical", Color3.fromRGB(255,0,0)},
+    ["Spirit-Spirit"] = {"Mythical", Color3.fromRGB(255,0,0)},
+    ["Leopard-Leopard"] = {"Mythical", Color3.fromRGB(255,0,0)},
+    ["Yeti-Yeti"] = {"Mythical", Color3.fromRGB(255,0,0)},
+    ["Kitsune-Kitsune"] = {"Mythical", Color3.fromRGB(255,0,0)},
+    ["Dragon-Dragon"] = {"Mythical", Color3.fromRGB(255,0,0)}
+}
+
+-- ESP
 local function CreateESP(tool)
     if not tool:FindFirstChild("ESP") then
-        local rarity, color = GetRarity(tool.Name)
-        local gui = Instance.new("BillboardGui", tool)
-        gui.Name = "ESP"
-        gui.Size = UDim2.new(0,100,0,40)
-        gui.AlwaysOnTop = true
-        local label = Instance.new("TextLabel", gui)
+        local esp = Instance.new("BillboardGui", tool)
+        esp.Name = "ESP"
+        esp.Size = UDim2.new(0,100,0,40)
+        esp.AlwaysOnTop = true
+        local label = Instance.new("TextLabel", esp)
         label.Size = UDim2.new(1,0,1,0)
+        label.Text = "[TRÁI] "..tool.Name
         label.TextScaled = true
-        label.Text = "[TRÁI] "..tool.Name.." - "..rarity
         label.BackgroundTransparency = 1
-        label.TextColor3 = color
+        label.TextColor3 = Color3.fromRGB(255,255,0)
         label.Font = Enum.Font.GothamBold
     end
 end
@@ -79,91 +105,55 @@ local function FindFruit()
             return v
         end
     end
+    return nil
 end
 
--- Store trái
-local function StoreFruit(fruitName)
-    local suc, res = pcall(function()
-        return game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StoreFruit", fruitName)
-    end)
-    if suc then
-        Notify("Đã nhặt trái", fruitName.." đã được gửi vào kho", 5)
+-- Dịch chuyển
+local function Teleport(fruit)
+    local hrp = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if fruit and fruit:FindFirstChild("Handle") and hrp then
+        hrp.CFrame = fruit.Handle.CFrame + Vector3.new(0,2,0)
+    end
+end
+
+-- Cất kho
+local function StoreFruit()
+    local tool = game.Players.LocalPlayer.Backpack:FindFirstChildWhichIsA("Tool")
+    if tool then
+        local name = tool.Name
+        local info = RarityTable[name] or {"Unknown", Color3.fromRGB(255,255,255)}
+        local success = pcall(function()
+            game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StoreFruit", name)
+        end)
+        Notify("["..info[1].."] Đã nhặt " .. name, "", 4, info[2])
+        if not success then return false end
         return true
-    else
-        Notify("Đã nhặt trái", fruitName.." không thể gửi kho, đang chuyển server...", 4)
-        wait(1.5)
-        HopServer()
-        return false
     end
+    return false
 end
 
--- Smart hop với tối ưu
-function HopServer()
-    local HttpService = game:GetService("HttpService")
-    local TPS = game:GetService("TeleportService")
-    local PlaceID = game.PlaceId
-    local function GetServers(cursor)
-        local url = "https://games.roblox.com/v1/games/"..PlaceID.."/servers/Public?sortOrder=2&limit=100"
-        if cursor then url = url.."&cursor="..cursor end
-        local response = game:HttpGet(url)
-        return HttpService:JSONDecode(response)
-    end
-
-    local function TeleportToServer(serverId)
-        TPS:TeleportToPlaceInstance(PlaceID, serverId, game.Players.LocalPlayer)
-    end
-
-    local servers = {}
-    local data, cursor = GetServers()
-    while data do
-        for _, server in pairs(data.data) do
-            -- Lọc server không đầy người (ít người chơi)
-            if server.playing < server.maxPlayers then
-                table.insert(servers, server.id)
-            end
-        end
-        if data.nextPageCursor then
-            data = GetServers(data.nextPageCursor)
-        else
-            break
-        end
-    end
-
-    -- Tránh server đã vào trước đó (nếu có)
-    local visitedServers = {}  -- Lưu các server đã vào
-    local function IsServerVisited(serverId)
-        for _, v in pairs(visitedServers) do
-            if v == serverId then
-                return true
-            end
-        end
-        return false
-    end
-
-    -- Chọn server chưa vào và ít người chơi nhất
-    for _, id in pairs(servers) do
-        if not IsServerVisited(id) then
-            TeleportToServer(id)
-            table.insert(visitedServers, id)
-            wait(5)
-        end
-    end
+-- Teleport nếu lỗi
+local function Hop()
+    Notify("Đang chuyển server...", "Không còn trái hoặc lỗi khi cất", 3)
+    wait(1)
+    game:GetService("TeleportService"):Teleport(game.PlaceId)
 end
 
--- Auto check & nhặt
-while task.wait(3) do
+-- Vòng lặp chính
+while true do
+    ShowIntroNotification() -- Gọi hàm giới thiệu
+    wait(5) -- Hiển thị 5 giây rồi chuyển sang tìm trái
+
     local fruit = FindFruit()
     if fruit then
-        local char = game.Players.LocalPlayer.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            char.HumanoidRootPart.CFrame = fruit.Handle.CFrame + Vector3.new(0,2,0)
-            wait(1)
-            firetouchinterest(char.HumanoidRootPart, fruit.Handle, 0)
-            wait(0.5)
-            firetouchinterest(char.HumanoidRootPart, fruit.Handle, 1)
-            StoreFruit(fruit.Name)
-        end
+        Teleport(fruit)
+        wait(1.5)
+        firetouchinterest(fruit.Handle, game.Players.LocalPlayer.Character.HumanoidRootPart, 0)
+        wait(1)
+        if not StoreFruit() then Hop() end
     else
-        HopServer()
+        wait(5)
+        Hop()
     end
+    wait(1)
 end
