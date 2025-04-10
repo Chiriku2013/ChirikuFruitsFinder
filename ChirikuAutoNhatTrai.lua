@@ -1,4 +1,4 @@
-getgenv().Team = "Pirates" -- Hoặc "Marines"
+getgenv().Team = "Marines" -- Hoặc "Marines"
 
 -- Auto Join Team
 pcall(function()
@@ -132,7 +132,7 @@ local function StoreFruit()
     return false
 end
 
--- Kiểm tra đã ghé server chưa
+-- Kiểm tra server đã ghé thăm
 local visitedServers = {}
 
 local function HasVisitedServer(placeId)
@@ -149,7 +149,7 @@ local function SmartHop()
     local placeId = game.PlaceId
     local players = game:GetService("Players")
     
-    -- Kiểm tra nếu chưa ghé thăm server này
+    -- Kiểm tra server đã ghé thăm
     if not HasVisitedServer(placeId) then
         local fruitFound = false
         for _, v in pairs(game.Workspace:GetChildren()) do
@@ -159,9 +159,25 @@ local function SmartHop()
             end
         end
 
+        -- Chỉ hop nếu không có trái trong server hiện tại
         if not fruitFound then
             Notify("Không có trái, đang chuyển server...", "Đang tìm server có trái", 3)
             wait(1)
             pcall(function()
                 teleportService:Teleport(placeId, players.LocalPlayer)
-                end
+            end)
+            AddVisitedServer(placeId)  -- Đánh dấu server đã ghé thăm
+        end
+    end
+end
+
+-- Vòng lặp chính
+while true do
+    ShowIntroNotification() -- Gọi hàm giới thiệu
+    wait(5) -- Hiển thị 5 giây rồi chuyển sang tìm trái
+
+    local fruit = FindFruit()
+    if fruit then
+        Teleport(fruit)
+        wait(1.5)
+        firetouchinterest(fruit.Handle
