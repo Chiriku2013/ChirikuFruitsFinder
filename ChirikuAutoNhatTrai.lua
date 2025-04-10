@@ -1,5 +1,6 @@
--- Auto Team
-getgenv().Team = "Marines" -- hoặc "Marines"
+getgenv().Team = "Marines" -- Hoặc "Marines"
+
+-- Auto Join Team
 pcall(function()
     if not game.Players.LocalPlayer.Team then
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("SetTeam", getgenv().Team)
@@ -20,13 +21,14 @@ local function Notify(title, text, duration, titleColor, textColor)
     end)
 end
 
--- Intro
+-- Giới thiệu đầu game
 local function ShowIntroNotification()
     Notify("Auto Nhặt Trái", "By: Chiriku Roblox", 5, Color3.fromRGB(0, 255, 0), Color3.fromRGB(255, 255, 0))
 end
 
--- Rarity Table
+-- Bảng phân loại trái
 local RarityTable = {
+    -- Common (Xám)
     ["Rocket-Rocket"] = {"Common", Color3.fromRGB(169,169,169)},
     ["Spin-Spin"] = {"Common", Color3.fromRGB(169,169,169)},
     ["Blade-Blade"] = {"Common", Color3.fromRGB(169,169,169)},
@@ -34,17 +36,23 @@ local RarityTable = {
     ["Bomb-Bomb"] = {"Common", Color3.fromRGB(169,169,169)},
     ["Smoke-Smoke"] = {"Common", Color3.fromRGB(169,169,169)},
     ["Spike-Spike"] = {"Common", Color3.fromRGB(169,169,169)},
+
+    -- Uncommon (Xanh dương)
     ["Flame-Flame"] = {"Uncommon", Color3.fromRGB(0,191,255)},
     ["Falcon-Falcon"] = {"Uncommon", Color3.fromRGB(0,191,255)},
     ["Ice-Ice"] = {"Uncommon", Color3.fromRGB(0,191,255)},
     ["Sand-Sand"] = {"Uncommon", Color3.fromRGB(0,191,255)},
     ["Dark-Dark"] = {"Uncommon", Color3.fromRGB(0,191,255)},
     ["Diamond-Diamond"] = {"Uncommon", Color3.fromRGB(0,191,255)},
+
+    -- Rare (Tím)
     ["Light-Light"] = {"Rare", Color3.fromRGB(148,0,211)},
     ["Rubber-Rubber"] = {"Rare", Color3.fromRGB(148,0,211)},
     ["Barrier-Barrier"] = {"Rare", Color3.fromRGB(148,0,211)},
     ["Ghost-Ghost"] = {"Rare", Color3.fromRGB(148,0,211)},
     ["Magma-Magma"] = {"Rare", Color3.fromRGB(148,0,211)},
+
+    -- Legendary (Hồng)
     ["Quake-Quake"] = {"Legendary", Color3.fromRGB(255,105,180)},
     ["Buddha-Buddha"] = {"Legendary", Color3.fromRGB(255,105,180)},
     ["Love-Love"] = {"Legendary", Color3.fromRGB(255,105,180)},
@@ -55,6 +63,8 @@ local RarityTable = {
     ["Rumble-Rumble"] = {"Legendary", Color3.fromRGB(255,105,180)},
     ["Pain-Pain"] = {"Legendary", Color3.fromRGB(255,105,180)},
     ["Blizzard-Blizzard"] = {"Legendary", Color3.fromRGB(255,105,180)},
+
+    -- Mythical (Đỏ)
     ["Gravity-Gravity"] = {"Mythical", Color3.fromRGB(255,0,0)},
     ["Mammoth-Mammoth"] = {"Mythical", Color3.fromRGB(255,0,0)},
     ["T-Rex-T-Rex"] = {"Mythical", Color3.fromRGB(255,0,0)},
@@ -70,7 +80,7 @@ local RarityTable = {
     ["Dragon-Dragon"] = {"Mythical", Color3.fromRGB(255,0,0)},
 }
 
--- ESP
+-- ESP trái
 local function CreateESP(tool)
     if not tool:FindFirstChild("ESP") then
         local esp = Instance.new("BillboardGui", tool)
@@ -98,7 +108,7 @@ local function FindFruit()
     return nil
 end
 
--- Teleport
+-- Dịch chuyển
 local function Teleport(fruit)
     local hrp = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if fruit and fruit:FindFirstChild("Handle") and hrp then
@@ -106,7 +116,7 @@ local function Teleport(fruit)
     end
 end
 
--- Store
+-- Lưu trái
 local function StoreFruit()
     local tool = game.Players.LocalPlayer.Backpack:FindFirstChildWhichIsA("Tool")
     if tool then
@@ -116,7 +126,8 @@ local function StoreFruit()
             game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StoreFruit", name)
         end)
         Notify("["..info[1].."] Đã nhặt " .. name, "", 4, info[2])
-        return success
+        if not success then return false end
+        return true
     end
     return false
 end
@@ -124,25 +135,25 @@ end
 -- Smart Hop
 local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
-local PlaceID = game.PlaceId
+local Player = game.Players.LocalPlayer
+local PlaceId = game.PlaceId
 local JoinedServers = {}
-local function SmartHop()
-    local servers = {}
-    local req = syn and syn.request or http_request
-    local body = req({
-        Url = "https://games.roblox.com/v1/games/"..PlaceID.."/servers/Public?sortOrder=Desc&limit=100"
-    }).Body
-    local decoded = HttpService:JSONDecode(body)
-    for _,v in pairs(decoded.data) do
-        if type(v) == "table" and v.maxPlayers > v.playing and not JoinedServers[v.id] then
-            JoinedServers[v.id] = true
-            TeleportService:TeleportToPlaceInstance(PlaceID, v.id)
-            wait(3)
+
+local function Hop()
+    pcall(function()
+        Notify("Đang chuyển server...", "Không còn trái hoặc lỗi khi cất", 3)
+        local servers = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..PlaceId.."/servers/Public?sortOrder=Desc&limit=100"))
+        for _, server in pairs(servers.data) do
+            if server.playing < server.maxPlayers and server.id ~= game.JobId and not JoinedServers[server.id] then
+                JoinedServers[server.id] = true
+                TeleportService:TeleportToPlaceInstance(PlaceId, server.id, Player)
+                break
+            end
         end
-    end
+    end)
 end
 
--- Main Loop
+-- Chạy
 while true do
     ShowIntroNotification()
     wait(5)
@@ -153,12 +164,10 @@ while true do
         wait(1.5)
         firetouchinterest(fruit.Handle, game.Players.LocalPlayer.Character.HumanoidRootPart, 0)
         wait(1)
-        if not StoreFruit() then
-            SmartHop()
-        end
+        if not StoreFruit() then Hop() end
     else
         wait(5)
-        SmartHop()
+        Hop()
     end
     wait(1)
 end
