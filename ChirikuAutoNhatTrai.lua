@@ -1,4 +1,5 @@
-getgenv().Team = "Marines" -- Hoặc "Marines"
+-- Định nghĩa các biến
+getgenv().Team = "Pirates" -- Hoặc "Marines"
 
 -- Auto Join Team
 pcall(function()
@@ -7,7 +8,7 @@ pcall(function()
     end
 end)
 
--- Notification function
+-- Thông báo khi bắt đầu
 local StarterGui = game:GetService("StarterGui")
 local function Notify(title, text, duration, titleColor, textColor)
     pcall(function()
@@ -21,9 +22,20 @@ local function Notify(title, text, duration, titleColor, textColor)
     end)
 end
 
--- Thêm phần giới thiệu giống Blox Fruits
+-- Hiển thị thông báo giới thiệu
 local function ShowIntroNotification()
     Notify("Auto Nhặt Trái", "By: Chiriku Roblox", 5, Color3.fromRGB(0, 255, 0), Color3.fromRGB(255, 255, 0))
+end
+
+-- Kiểm tra và thêm server đã ghé thăm
+local visitedServers = {}
+
+local function HasVisitedServer(placeId)
+    return visitedServers[placeId] or false
+end
+
+local function AddVisitedServer(placeId)
+    visitedServers[placeId] = true
 end
 
 -- Rarity Table
@@ -132,17 +144,6 @@ local function StoreFruit()
     return false
 end
 
--- Kiểm tra server đã ghé thăm
-local visitedServers = {}
-
-local function HasVisitedServer(placeId)
-    return visitedServers[placeId] or false
-end
-
-local function AddVisitedServer(placeId)
-    visitedServers[placeId] = true
-end
-
 -- Smart Hop
 local function SmartHop()
     local teleportService = game:GetService("TeleportService")
@@ -151,6 +152,7 @@ local function SmartHop()
     
     -- Kiểm tra server đã ghé thăm
     if not HasVisitedServer(placeId) then
+        -- Kiểm tra trong workspace xem có trái nào không
         local fruitFound = false
         for _, v in pairs(game.Workspace:GetChildren()) do
             if v:IsA("Tool") and v.Name:find("Fruit") then
@@ -159,10 +161,11 @@ local function SmartHop()
             end
         end
 
-        -- Chỉ hop nếu không có trái trong server hiện tại
+        -- Chỉ hop nếu không tìm thấy trái
         if not fruitFound then
             Notify("Không có trái, đang chuyển server...", "Đang tìm server có trái", 3)
             wait(1)
+            -- Dùng Teleport để chuyển server
             pcall(function()
                 teleportService:Teleport(placeId, players.LocalPlayer)
             end)
@@ -171,7 +174,7 @@ local function SmartHop()
     end
 end
 
--- Vòng lặp chính
+-- Vòng lặp chính (luôn luôn kiểm tra và hop server nếu cần)
 while true do
     ShowIntroNotification() -- Gọi hàm giới thiệu
     wait(5) -- Hiển thị 5 giây rồi chuyển sang tìm trái
@@ -180,4 +183,12 @@ while true do
     if fruit then
         Teleport(fruit)
         wait(1.5)
-        firetouchinterest(fruit.Handle
+        firetouchinterest(fruit.Handle, game.Players.LocalPlayer.Character.HumanoidRootPart, 0)
+        wait(1)
+        if not StoreFruit() then SmartHop() end
+    else
+        wait(5)
+        SmartHop()
+    end
+    wait(1)
+end
