@@ -1,25 +1,23 @@
--- Chọn team auto (Pirates hoặc Marines)
-getgenv().Team = "Marines"
+-- Auto Nhặt Trái FULL | By: Chiriku Roblox
+-- Hỗ trợ: Solara v2.22, Delta, PC & Mobile
+-- Tính năng: ESP nhìn xa + khoảng cách, tự nhặt + cất trái, smart hop, auto rejoin, auto team
 
--- Auto vào team khi mới vào game
+-- // Cấu hình
+getgenv().Team = "Marines" -- Hoặc "Marines"
+
+-- // Auto Join Team
 pcall(function()
     if not game.Players.LocalPlayer.Team then
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("SetTeam", getgenv().Team)
     end
 end)
 
--- Các service cần dùng
+-- // Notification giống Blox Fruits
 local StarterGui = game:GetService("StarterGui")
-local HttpService = game:GetService("HttpService")
-local TPService = game:GetService("TeleportService")
-local Players = game:GetService("Players")
-local Hopped = {} -- Dùng để lưu các server đã ghé, tránh trùng
-
--- Hàm hiển thị thông báo (SendNotification)
 local function Notify(title, text, duration, titleColor, textColor)
     pcall(function()
         StarterGui:SetCore("SendNotification", {
-            Title = title,
+            Title = title or "",
             Text = text or "",
             Duration = duration or 4,
             TextColor3 = textColor or Color3.fromRGB(255,255,0),
@@ -28,12 +26,11 @@ local function Notify(title, text, duration, titleColor, textColor)
     end)
 end
 
--- Thông báo khi bắt đầu script
-Notify("Auto Nhặt Trái", "By: Chiriku Roblox", 5, Color3.fromRGB(0,255,0), Color3.fromRGB(255,255,0))
+Notify("Auto Nhặt Trái", "By: Chiriku Roblox", 5)
 
--- Bảng phân loại trái theo độ hiếm + màu
-local RarityTable = {
-    -- Common (xám)
+-- // Bảng độ hiếm trái
+local Rarity = {
+    -- Common (Xám)
     ["Rocket-Rocket"] = {"Common", Color3.fromRGB(169,169,169)},
     ["Spin-Spin"] = {"Common", Color3.fromRGB(169,169,169)},
     ["Blade-Blade"] = {"Common", Color3.fromRGB(169,169,169)},
@@ -42,7 +39,7 @@ local RarityTable = {
     ["Smoke-Smoke"] = {"Common", Color3.fromRGB(169,169,169)},
     ["Spike-Spike"] = {"Common", Color3.fromRGB(169,169,169)},
 
-    -- Uncommon (xanh dương)
+    -- Uncommon (Xanh dương)
     ["Flame-Flame"] = {"Uncommon", Color3.fromRGB(0,191,255)},
     ["Falcon-Falcon"] = {"Uncommon", Color3.fromRGB(0,191,255)},
     ["Ice-Ice"] = {"Uncommon", Color3.fromRGB(0,191,255)},
@@ -50,14 +47,14 @@ local RarityTable = {
     ["Dark-Dark"] = {"Uncommon", Color3.fromRGB(0,191,255)},
     ["Diamond-Diamond"] = {"Uncommon", Color3.fromRGB(0,191,255)},
 
-    -- Rare (tím)
+    -- Rare (Tím)
     ["Light-Light"] = {"Rare", Color3.fromRGB(148,0,211)},
     ["Rubber-Rubber"] = {"Rare", Color3.fromRGB(148,0,211)},
     ["Barrier-Barrier"] = {"Rare", Color3.fromRGB(148,0,211)},
     ["Ghost-Ghost"] = {"Rare", Color3.fromRGB(148,0,211)},
     ["Magma-Magma"] = {"Rare", Color3.fromRGB(148,0,211)},
 
-    -- Legendary (hồng)
+    -- Legendary (Hồng)
     ["Quake-Quake"] = {"Legendary", Color3.fromRGB(255,105,180)},
     ["Buddha-Buddha"] = {"Legendary", Color3.fromRGB(255,105,180)},
     ["Love-Love"] = {"Legendary", Color3.fromRGB(255,105,180)},
@@ -69,7 +66,7 @@ local RarityTable = {
     ["Pain-Pain"] = {"Legendary", Color3.fromRGB(255,105,180)},
     ["Blizzard-Blizzard"] = {"Legendary", Color3.fromRGB(255,105,180)},
 
-    -- Mythical (đỏ)
+    -- Mythical (Đỏ)
     ["Gravity-Gravity"] = {"Mythical", Color3.fromRGB(255,0,0)},
     ["Mammoth-Mammoth"] = {"Mythical", Color3.fromRGB(255,0,0)},
     ["T-Rex-T-Rex"] = {"Mythical", Color3.fromRGB(255,0,0)},
@@ -85,97 +82,94 @@ local RarityTable = {
     ["Dragon-Dragon"] = {"Mythical", Color3.fromRGB(255,0,0)}
 }
 
--- Tạo ESP trên trái + hiển thị khoảng cách
-local function CreateESP(tool)
-    if not tool:FindFirstChild("ESP") then
-        local esp = Instance.new("BillboardGui", tool)
-        esp.Name = "ESP"
-        esp.Size = UDim2.new(0,150,0,40)
-        esp.AlwaysOnTop = true
-        esp.MaxDistance = 100000
+-- // Smart Hop (chống trùng server)
+local Hopped = {}
+local function SmartHop()
+    local Http = game:GetService("HttpService")
+    local Servers = game:GetService("HttpService"):JSONDecode(
+        game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100")
+    )
 
-        local label = Instance.new("TextLabel", esp)
-        label.Size = UDim2.new(1,0,1,0)
-        label.TextScaled = true
-        label.BackgroundTransparency = 1
-        label.Font = Enum.Font.GothamBold
-        label.TextColor3 = Color3.fromRGB(255,255,0)
-
-        task.spawn(function()
-            while esp and esp.Parent and tool:IsDescendantOf(game.Workspace) do
-                local hrp = Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    local dist = math.floor((tool.Handle.Position - hrp.Position).Magnitude)
-                    label.Text = "[TRÁI] "..tool.Name.." | "..dist.."m"
-                end
-                task.wait(0.5)
-            end
-        end)
-    end
-end
-
--- Tìm trái trong map
-local function FindFruit()
-    for _,v in pairs(game.Workspace:GetChildren()) do
-        if v:IsA("Tool") and v:FindFirstChild("Handle") and v.Name:lower():find("fruit") then
-            CreateESP(v)
-            return v
-        end
-    end
-end
-
--- Dịch chuyển đến trái
-local function Teleport(fruit)
-    local hrp = Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if hrp and fruit and fruit:FindFirstChild("Handle") then
-        hrp.CFrame = fruit.Handle.CFrame + Vector3.new(0,2,0)
-    end
-end
-
--- Lưu trái vào storage (StoreFruit)
-local function StoreFruit()
-    local tool = Players.LocalPlayer.Backpack:FindFirstChildWhichIsA("Tool")
-    if tool then
-        local name = tool.Name
-        local info = RarityTable[name] or {"Unknown", Color3.fromRGB(255,255,255)}
-        local success = pcall(function()
-            game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StoreFruit", name)
-        end)
-        Notify("["..info[1].."] Đã nhặt " .. name, "", 4, info[2])
-        return success
-    end
-end
-
--- Smart hop: Tìm server khác chưa vào, và có slot trống
-local function SmartHopWithFruitOnly()
-    local Servers = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"))
-    for _,v in pairs(Servers.data) do
-        if v.playing < v.maxPlayers and v.id ~= game.JobId and not table.find(Hopped, v.id) then
-            table.insert(Hopped, v.id)
-            TPService:TeleportToPlaceInstance(game.PlaceId, v.id)
+    for _, v in pairs(Servers.data) do
+        if type(v) == "table" and v.playing < v.maxPlayers and v.id ~= game.JobId and not Hopped[v.id] then
+            Hopped[v.id] = true
+            game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, v.id)
             break
         end
     end
 end
 
--- Auto rejoin khi bị kick hoặc lỗi teleport
-Players.LocalPlayer.OnTeleport:Connect(function(state)
-    if state == Enum.TeleportState.Failed then
-        wait(2)
-        TPService:Teleport(game.PlaceId)
+-- // Tạo ESP nhìn xa và có khoảng cách
+local function CreateESP(fruit)
+    if not fruit:FindFirstChild("ESP") then
+        local dist = math.floor((fruit.Handle.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude)
+        local esp = Instance.new("BillboardGui", fruit)
+        esp.Name = "ESP"
+        esp.Size = UDim2.new(0,100,0,40)
+        esp.AlwaysOnTop = true
+        local label = Instance.new("TextLabel", esp)
+        label.Size = UDim2.new(1,0,1,0)
+        label.Text = "[TRÁI] "..fruit.Name.." ("..dist.."m)"
+        label.TextScaled = true
+        label.BackgroundTransparency = 1
+        label.TextColor3 = Color3.fromRGB(255,255,0)
+        label.Font = Enum.Font.GothamBold
+    end
+end
+
+-- // Tìm trái
+local function FindFruit()
+    for _, v in pairs(game.Workspace:GetChildren()) do
+        if v:IsA("Tool") and v:FindFirstChild("Handle") and string.find(v.Name:lower(), "fruit") then
+            CreateESP(v)
+            return v
+        end
+    end
+    return nil
+end
+
+-- // Teleport tới trái
+local function TeleportToFruit(fruit)
+    local hrp = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if fruit and fruit:FindFirstChild("Handle") and hrp then
+        hrp.CFrame = fruit.Handle.CFrame + Vector3.new(0, 2, 0)
+    end
+end
+
+-- // Cất kho trái
+local function StoreFruit()
+    local tool = game.Players.LocalPlayer.Backpack:FindFirstChildWhichIsA("Tool")
+    if tool then
+        local name = tool.Name
+        local info = Rarity[name] or {"Unknown", Color3.fromRGB(255,255,255)}
+        local success = pcall(function()
+            game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StoreFruit", name)
+        end)
+        Notify("["..info[1].."] Đã nhặt " .. name, "", 4, info[2])
+        if not success then return false end
+        return true
+    end
+    return false
+end
+
+-- // Auto rejoin nếu bị kick
+game:GetService("CoreGui").RobloxPromptGui.promptOverlay.ChildAdded:Connect(function(child)
+    if child.Name == "ErrorPrompt" then
+        game:GetService("TeleportService"):Teleport(game.PlaceId)
     end
 end)
 
--- Vòng lặp chính: Tìm trái → teleport → nhặt → store → hop
+-- // Vòng lặp chính
 while true do
     local fruit = FindFruit()
     if fruit then
-        Teleport(fruit)
+        TeleportToFruit(fruit)
         wait(1.5)
-        firetouchinterest(fruit.Handle, Players.LocalPlayer.Character.HumanoidRootPart, 0)
+        firetouchinterest(fruit.Handle, game.Players.LocalPlayer.Character.HumanoidRootPart, 0)
         wait(1)
-        if not StoreFruit() then SmartHopWithFruitOnly() end
+        if not StoreFruit() then SmartHop() end
     else
-        SmartHopWithFruitOnly()
+        SmartHop()
     end
+    wait(1)
 end
