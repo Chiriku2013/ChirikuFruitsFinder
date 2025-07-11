@@ -16,7 +16,7 @@ if worldMap[placeId] then
     end
 
     -- Set UI text/logo - BFInfoUi
-    getgenv().BFInfoTopText = "Chiriku Roblox Hub - Fruits Finder"
+    getgenv().BFInfoTopText = "Chiriku Roblox Hub Fruits Finder"
     getgenv().BFInfoLogoId = "rbxassetid://119836305527028"
 
     -- Load UI song song - BFInfoUi
