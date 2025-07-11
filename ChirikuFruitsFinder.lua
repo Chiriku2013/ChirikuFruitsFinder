@@ -173,13 +173,13 @@ game:GetService("Players").LocalPlayer.OnTeleport:Connect(function(State)
 end)
 
 --// Vòng lặp chính
-while task.wait(3) do
+while task.wait(5) do
     local fruit = FindFruit()
     if fruit then
         Teleport(fruit)
         wait(1.5)
         firetouchinterest(fruit.Handle, game.Players.LocalPlayer.Character.HumanoidRootPart, 0)
-        wait(3)
+        wait(5)
         if not StoreFruit() then SmartHop() end
     else
         SmartHop()
