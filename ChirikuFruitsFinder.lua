@@ -20,7 +20,7 @@ if worldMap[placeId] then
     getgenv().BFInfoLogoId = "rbxassetid://119836305527028"
 
     -- Load UI song song - BFInfoUi
-    task.wait(function()
+    task.spawn(function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Chiriku2013/BFInfoUi/refs/heads/main/BFInfoUi.lua"))()
     end)
     
