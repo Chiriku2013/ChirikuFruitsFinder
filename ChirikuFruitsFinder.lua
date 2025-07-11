@@ -21,7 +21,7 @@ if worldMap[placeId] then
 
     -- Load UI song song - BFInfoUi
     task.spawn(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/Chiriku2013/BFInfoUi/refs/heads/main/BFInfoUi.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Chiriku2013/BFInfoUi/refs/heads/main/BFInfoUi.lua"))()
     end)
     
 --// Cấu hình chọn team
