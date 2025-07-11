@@ -168,7 +168,7 @@ game:GetService("Players").LocalPlayer.OnTeleport:Connect(function(State)
 end)
 
 --// Vòng lặp chính
-while task.wait(1) do
+while task.wait(3) do
     local fruit = FindFruit()
     if fruit then
         Teleport(fruit)
