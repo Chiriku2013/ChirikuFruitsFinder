@@ -18,6 +18,11 @@ if worldMap[placeId] then
     -- Set UI text/logo - BFInfoUi
     getgenv().BFInfoTopText = "Chiriku Roblox Hub - Fruits Finder"
     getgenv().BFInfoLogoId = "rbxassetid://119836305527028"
+
+    -- Load UI song song - BFInfoUi
+    task.wait(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Chiriku2013/BFInfoUi/refs/heads/main/BFInfoUi.lua"))()
+    end)
     
 --// Cấu hình chọn team
 getgenv().Team = "Pirates" -- hoặc "Marines"
