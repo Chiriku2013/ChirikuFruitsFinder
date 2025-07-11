@@ -1,5 +1,26 @@
+local placeId = game.PlaceId
+local worldMap = {
+    [2753915549] = true,
+    [4442272183] = true,
+    [7449423635] = true
+}
+
+if worldMap[placeId] then
+    -- Xác định World
+    if placeId == 2753915549 then
+        World1 = true
+    elseif placeId == 4442272183 then
+        World2 = true
+    elseif placeId == 7449423635 then
+        World3 = true
+    end
+
+    -- Set UI text/logo - BFInfoUi
+    getgenv().BFInfoTopText = "Chiriku Roblox Hub - Fruits Finder"
+    getgenv().BFInfoLogoId = "rbxassetid://119836305527028"
+    
 --// Cấu hình chọn team
-getgenv().Team = "Marines" -- hoặc "Marines"
+getgenv().Team = "Pirates" -- hoặc "Marines"
 
 --// Auto vào đội
 pcall(function()
@@ -22,7 +43,7 @@ local function Notify(title, text, dur, titleColor, textColor)
 end
 
 --// Thông báo giới thiệu
-Notify("Auto Nhặt Trái", "By: Chiriku Roblox", 5, Color3.fromRGB(0,255,0), Color3.fromRGB(255,255,0))
+Notify("Fruits Finder", "By: Chiriku Roblox", 5, Color3.fromRGB(0,255,0), Color3.fromRGB(255,255,0))
 
 --// Bảng độ hiếm
 local Rarity = {
@@ -116,7 +137,7 @@ local function StoreFruit()
     local tool = game.Players.LocalPlayer.Backpack:FindFirstChildWhichIsA("Tool")
     if tool then
         local name = tool.Name
-        local info = Rarity[name] or {"Unknown", Color3.fromRGB(255,255,255)}
+        local info = Rarity[name] or {"Fruits", Color3.fromRGB(255,255,255)}
         local ok = pcall(function()
             game.ReplicatedStorage.Remotes.CommF_:InvokeServer("StoreFruit", name)
         end)
@@ -153,9 +174,13 @@ while task.wait(1) do
         Teleport(fruit)
         wait(1.5)
         firetouchinterest(fruit.Handle, game.Players.LocalPlayer.Character.HumanoidRootPart, 0)
-        wait(1)
+        wait(3)
         if not StoreFruit() then SmartHop() end
     else
         SmartHop()
     end
+end
+
+else
+    game.Players.LocalPlayer:Kick("This script is not supported in this game, please try again with Blox Fruits!")
 end
